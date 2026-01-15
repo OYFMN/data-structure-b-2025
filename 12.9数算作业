@@ -1,0 +1,282 @@
+12.9数算作业
+倪珺清 2400011455
+1、	E02734: 十进制到八进制
+2、	#include <bits/stdc++.h>
+3、	using namespace std;
+4、	int main(){
+5、	  int n;
+6、	  vector<int> a;
+7、	  scanf("%d",&n);
+8、	  while (n>0){
+9、	  	a.push_back(n%8);
+10、	  	n/=8;
+11、	  }
+12、	  for (int i=a.size()-1;i>=0;i--) printf("%d",a[i]);
+13、	  return 0;
+14、	}
+ 
+耗时：5min
+2. M21509:序列的中位数
+#include <bits/stdc++.h>
+#include <queue>
+#include <vector>
+using namespace std;
+int n,a[100001];
+priority_queue<int> maxheap;
+priority_queue<int,vector<int>,greater<int> > minheap;
+void balance(){
+  if (maxheap.size()>minheap.size()+1){
+  	int t=maxheap.top();
+  	minheap.push(t);
+  	maxheap.pop();
+  }
+  else if (maxheap.size()<minheap.size()){
+  	int t=minheap.top();
+  	maxheap.push(t);
+  	minheap.pop();
+  }
+  return;
+}
+int main(){
+  scanf("%d",&n);
+  for (int i=1;i<=n;i++) scanf("%d",&a[i]);
+  for (int i=1;i<=n;i++){
+  	if (maxheap.empty()) maxheap.push(a[i]);
+  	else if (a[i]<=maxheap.top()) maxheap.push(a[i]);
+	else minheap.push(a[i]);
+	balance();
+	if (i%2==1) printf("%d\n",maxheap.top());
+  }
+  return 0;
+}
+ 
+耗时：15min
+3.植物观察
+#include <bits/stdc++.h>
+using namespace std;
+int n,m,a[101][101],t,f[101],x,y,p;
+bool v[101];
+void dfs(int k){
+  if (t==1) return;
+  for (int i=0;i<n;i++)
+    if (k!=i && a[k][i]<=1){
+      if (!v[i]){
+      	v[i]=true;
+      	f[i]=f[k]+a[k][i];
+      	dfs(i);
+	  }
+	  else if ((f[k]+a[k][i]-f[i])%2!=0){
+	  	t=1;break;
+	  }
+	}
+  return;
+}
+int main(){
+  scanf("%d%d",&n,&m);
+  memset(a,0x3f,sizeof(a));
+  for (int i=1;i<=m;i++){
+    scanf("%d%d%d",&x,&y,&p);
+    a[x][y]=p;
+    a[y][x]=p;
+    if (x==y && p==1) t=1;
+  }
+  for (int i=0;i<n;i++)
+    if (!v[i]){
+      f[i]=0;
+      v[i]=true;
+      dfs(i);
+      if (t==1) break;
+	}
+  if (t==0) printf("YES");
+  else printf("NO");
+  return 0;
+}
+ 
+耗时：30min
+4.神经网络
+#include <bits/stdc++.h>
+using namespace std;
+int n,m,x,y,indegree[101];
+long long d,w[101][101],u[101],c[101];
+bool b[101][101],is_out[101];
+int main(){
+  scanf("%d%d",&n,&m);
+  for (int i=1;i<=n;i++) scanf("%lld%lld",&c[i],&u[i]);
+  memset(is_out,true,sizeof(is_out));
+  for (int i=1;i<=m;i++){
+  	scanf("%d%d%lld",&x,&y,&d);
+  	b[x][y]=true;
+  	w[x][y]+=d;
+  	is_out[x]=false;
+  }
+  for (int i=1;i<=n;i++)
+    for (int j=1;j<=n;j++)
+      if (b[i][j]) indegree[j]++;
+  queue<int> q;
+  for (int i=1;i<=n;i++)
+    if (indegree[i]==0) q.push(i);
+    else c[i]-=u[i];
+  vector<int> topo_order;
+  while (!q.empty()){
+  	int p=q.front();
+  	topo_order.push_back(p);
+  	q.pop();
+  	for (int i=1;i<=n;i++)
+  	  if (b[p][i]){
+		indegree[i]--;
+		if (indegree[i]==0) q.push(i);
+	  }
+  } 
+  if (topo_order.size()!=n){
+  	printf("NULL");
+  	return 0;
+  }
+  for (int i:topo_order){
+  	if (c[i]<=0) continue;
+  	for (int j=1;j<=n;j++)
+  	  if (b[i][j]) c[j]+=c[i]*w[i][j];
+  }
+  vector<int> ans;
+  for (int i=1;i<=n;i++)
+    if (is_out[i] && c[i]>0) ans.push_back(i);
+  if (ans.size()==0) printf("NULL");
+  else{
+  	for (int i=0;i<ans.size();i++)
+  	  printf("%d %lld\n",ans[i],c[ans[i]]);
+  }
+  return 0;
+}
+ 
+耗时：1h
+5. T27351:01 最小生成树
+#include <bits/stdc++.h>
+using namespace std;
+int n,m,x,y,a[100001];
+int main(){
+  scanf("%d%d",&n,&m);
+  vector<unordered_set<int>> b(n+1);
+  for (int i=1;i<=m;i++){
+  	scanf("%d%d",&x,&y);
+  	b[x].insert(y);
+  	b[y].insert(x);
+  	a[x]++;a[y]++;
+  }
+  unordered_set<int> unvisited;
+  for (int i=1;i<=n;i++) unvisited.insert(i);
+  int k=0;
+  while (!unvisited.empty()){
+  	int start=0;
+  	for (int i: unvisited)
+  	  if (start==0 || a[i]<a[start]) start=i;
+  	unvisited.erase(start);
+  	k++;
+  	queue<int> q;
+  	q.push(start);
+  	while (!q.empty()){
+  	  int p=q.front();
+  	  vector<int> tovisit;
+  	  for (int i: b[p]) a[i]--;
+  	  q.pop();
+  	  for (int i: unvisited)
+  	    if (b[p].count(i)==0)
+  	      tovisit.push_back(i);
+  	  for (int i: tovisit){
+  	    unvisited.erase(i);
+  	    q.push(i);
+  	  }
+	}
+  }
+  printf("%d",k-1);
+  return 0;
+}
+ 
+耗时：1h
+6. T30193:哈密顿激活层
+#include <bits/stdc++.h>
+using namespace std;
+struct keys{
+  int x,y,t;
+};
+keys a[101];
+int tt,n,m,k,b,startx,starty,xx,yy,fx[101],fy[101],e[11][11];
+int dx[4]={1,-1,0,0};
+int dy[4]={0,0,1,-1};
+bool c[11][11],v[101][101];
+void dfs(int nowx,int nowy,int p){
+  if (p==n*m-b){
+  	tt=1;
+  	return;
+  }
+  if (tt==1) return;
+  for (int i=0;i<4;i++){
+  	int nx=dx[i]+nowx,ny=dy[i]+nowy;
+  	if (nx<1 || nx>n || ny<1 || ny>m) continue;
+  	if (v[nx][ny] || c[nx][ny]) continue;
+  	if (e[nx][ny]!=0 && e[nx][ny]!=p+1) continue;
+  	bool u=true;
+  	for (int j=k;j>=1;j--){
+  	  if (a[j].t<p+1) break;
+  	  int d=abs(nx-a[j].x)+abs(ny-a[j].y);
+  	  if (d>a[j].t-p-1){
+  	  	u=false;break;
+	  }
+	}
+	if (!u) continue;
+	fx[p+1]=nx;fy[p+1]=ny;
+    v[nx][ny]=true;
+	dfs(nx,ny,p+1);
+	if (tt==1) return;
+	v[nx][ny]=false;	
+  }
+  return;
+}
+bool cmp(keys x,keys y){
+  return x.t<y.t;
+}
+int main(){
+  scanf("%d%d%d%d",&n,&m,&k,&b);
+  for (int i=1;i<=k;i++){
+  	scanf("%d%d%d",&a[i].x,&a[i].y,&a[i].t);
+  	e[a[i].x][a[i].y]=a[i].t;
+  	if (a[i].t==1){
+  	  startx=a[i].x;starty=a[i].y;
+	}
+  }
+  for (int i=1;i<=b;i++){
+    scanf("%d%d",&xx,&yy);
+    c[xx][yy]=true;
+  }
+  sort(a+1,a+k+1,cmp);
+  for (int i=2;i<=k;i++){
+  	int d=abs(a[i].x-a[1].x)+abs(a[i].y-a[1].y);
+  	if ((d+a[i].t-a[1].t)%2!=0){
+  	  tt=-1;break;
+	}
+  }
+  for (int i=1;i<=k;i++){
+  	if (tt==-1) break;
+    for (int j=i+1;j<=k;j++){
+      int d=abs(a[i].x-a[j].x)+abs(a[i].y-a[j].y);
+      if (d>a[j].t-a[i].t){
+      	tt=-1;break;
+	  }
+	}
+  }
+  if (tt==-1){
+  	printf("-1");return 0;
+  }
+  fx[1]=startx;fy[1]=starty;
+  v[startx][starty]=true;
+  dfs(startx,starty,1);
+  if (tt==0) printf("-1");
+  else{
+  	for (int i=1;i<=n*m-b;i++)
+  	  printf("%d %d\n",fx[i],fy[i]);
+  }
+  return 0;
+}
+ 
+耗时：50min
+
+
+学习收获：这次考试还挺难的，学到了并查集，堆，拓扑排序，最小生成树在稀疏图中的优化，以及剪枝的各种方法。整体看下来完成较复杂问题还是有点困难，还需多做题。
